@@ -1,4 +1,4 @@
-/opt/log-collector/log-collector.log
+/opt/log_collector/log_collector.log
 {
     missingok
     daily

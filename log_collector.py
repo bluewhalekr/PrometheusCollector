@@ -8,7 +8,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 stream_handle = logging.StreamHandler()
 log_file_name = "/opt/log_collector/log_collector.log"
-file_handle = logging.FileHandler(log_file_name=log_file_name)
+file_handle = logging.FileHandler(filename=log_file_name)
 
 logger.addHandler(stream_handle)
 logger.addHandler(file_handle)

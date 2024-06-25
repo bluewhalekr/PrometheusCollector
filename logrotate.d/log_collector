@@ -1,0 +1,8 @@
+/opt/log-collector/log-collector.log
+{
+    missingok
+    daily
+    copytruncate
+    rotate 7
+    notifempty
+}

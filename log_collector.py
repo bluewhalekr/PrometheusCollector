@@ -3,15 +3,12 @@ import os
 import logging
 import argparse
 import json
+import sys
 
+log_format = "%(levelname)s %(asctime)s = %(message)s"
+
+logging.basicConfig(stream=sys.stdout, filemode="a", format=log_format, level=logging.INFO)
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-stream_handle = logging.StreamHandler()
-log_file_name = "/opt/log_collector/log_collector.log"
-file_handle = logging.FileHandler(filename=log_file_name)
-
-logger.addHandler(stream_handle)
-logger.addHandler(file_handle)
 
 ignore_lines = ["No drop-pending idents have expired",
                 "Removing historical entries older than",
@@ -112,11 +109,18 @@ def check_command(log_dict):
         ctx = log_dict["ctx"]
         logging.info(f'=== {date} ctx = {ctx}, cmd = {cmd}, client = {client}, table = {table}, db = {db}')
         send_user_command(date=date, ctx=ctx, cmd=cmd, client=client, table_name=table, db=db)
+        return
+    if "speculativeAuthenticate" in cmd_info.keys:
+        auth_info = cmd_info['speculativeAuthenticate']
+        db = auth_info['db']
+        user = "userdb.won@aimmo.co.kr".replace(db+".", "")
+        ctx = log_dict["ctx"]
+        date = log_dict["t"]["$date"]
+        send_user_access(date=date, ctx=ctx, cmd=cmd, client=client, user=user, db=db)
 
 
 def check_accept_state(log_dict):
     pass
-
 
 def check_authenticated(log_dict):
     date = log_dict["t"]["$date"]

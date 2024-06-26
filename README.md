@@ -4,28 +4,40 @@
 
 <img alt="시스템 구성도" src="resource/azure-vm-disk-metric.png" height=40% width=40% style="margin-left:auto; margin-right:auto; display: block;"/>
 
-## Install
+## Download Full Sources and make default running environment
 ```shell
-aimmodev@eimmo-batch-vms-worker3:~/$sudo mkdir -p /opt/collector
-aimmodev@eimmo-batch-vms-worker3:~/$sudo cp ./bin/collector /opt/collector
-aimmodev@eimmo-batch-vms-worker3:~/$sudo su - && cd /opt/collector
-aimmodev@eimmo-batch-vms-worker3:~/bin$ sudo su -
-root@eimmo-batch-vms-worker2:/opt/collector$ apt install python3.8-venv gcc python3-dev
-root@eimmo-batch-vms-worker2:/opt/collector$ python -m venv venv
-root@eimmo-batch-vms-worker2:/opt/collector$ source venv/bin/activate
-root@eimmo-batch-vms-worker2:/opt/collector$ python -m pip install pip==9.0.3
-root@eimmo-batch-vms-worker2::opt/collector$ pip install -r requirements.txt
+aimmodev:~/$ sudo su -
+root:~/$ cd /opt
+root:~/opt$ git clone https://github.com/bluewhalekr/PrometheusCollector.git collector
+root:~/opt$ cd collector
+root:~/opt/collector$ python -m venv venv
+root:~/opt/collector$ source venv/bin/activate
+root:~/opt/collector$ pip install -r requirements.txt
 ```
 
-## Regist as daemon
+## Install - collector
 ```shell
-root@eimmo-batch-vms-worker2::opt/collector$ cp collector.service /etc/systemd/system/
-root@eimmo-batch-vms-worker2:/etc/systemd/system# systemctl daemon-reload
-root@eimmo-batch-vms-worker2:/etc/systemd/system# systemctl enable collector
-root@eimmo-batch-vms-worker2:/etc/systemd/system# systemctl start collector
+root:~/opt/collector$ vi config.py # edit config in your system
+root:~/opt/collector$ cp collector.service /etc/systemd/system
+root:~/opt/collector$ systemctl enable collector
+root:~/opt/collector$ systemctl start collector
 ```
 
-## When you send slack message
+## Install - log_collector
+```shell
+root:~/opt/collector$ vi log_collector.service # edit service with your system
+root:~/opt/collector$ cp log_collector.service /etc/systemd/system
+root:~/opt/collector$ systemctl enable log_collector
+root:~/opt/collector$ systemctl start log_collector
+```
+** 먼저 mongodb의 로그 레벨을 아래와 같은 방법을 이용하여 4이상으로 설정하여야 합니다.
+```shell
+> use admin
+switched to db admin
+> db.runCommand ({setParameter : 1, logLevel : 4})
+```
+
+## Run Cron Daemon
 ```shell
 SLACK_API_TOKEN=abcdefghijklmn python collector_cron.py
 ```

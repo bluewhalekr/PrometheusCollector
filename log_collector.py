@@ -4,11 +4,15 @@ import logging
 import argparse
 import json
 import sys
+import signal
 
 log_format = "%(levelname)s %(asctime)s = %(message)s"
 
 logging.basicConfig(stream=sys.stdout, filemode="a", format=log_format, level=logging.INFO)
 logger = logging.getLogger()
+
+retry_this = True
+is_log_trace = True
 
 ignore_lines = ["No drop-pending idents have expired",
                 "Removing historical entries older than",
@@ -65,6 +69,9 @@ exclude_cmds = ['hello',
                 'getCmdLineOpts',
                 ]
 
+exclude_dbs = ['config']
+exclude_users = ['__system']
+
 retry_count = 0
 
 api_server_url_pre = "http://eimmo-infra-manager.koreacentral.cloudapp.azure.com:8080/mongodb/user/put"
@@ -88,13 +95,16 @@ def send_data(data, api_url):
 def send_user_access(date: str, ctx: str, cmd: str, client: str, user: str, db: str):
     data = {'date': date, 'ctx': ctx, 'cmd': cmd, 'client': client, 'user': user, 'db': db}
     api_url = api_server_url_pre + "/access"
-    send_data(data=data, api_url=api_url)
+    if db not in exclude_dbs:
+        if user is None or (user is not None and (user not in exclude_users)):
+            send_data(data=data, api_url=api_url)
 
 
 def send_user_command(date: str, ctx: str, cmd: str, client: str, table_name: str, db: str):
     data = {'date': date, 'ctx': ctx, 'cmd': cmd, 'client': client, 'table': table_name, 'db': db}
     api_url = api_server_url_pre + "/command"
-    send_data(data=data, api_url=api_url)
+    if db not in exclude_dbs:
+        send_data(data=data, api_url=api_url)
 
 
 def check_command(log_dict):
@@ -113,7 +123,7 @@ def check_command(log_dict):
     if "speculativeAuthenticate" in cmd_info.keys:
         auth_info = cmd_info['speculativeAuthenticate']
         db = auth_info['db']
-        user = "userdb.won@aimmo.co.kr".replace(db+".", "")
+        user = "userdb.won@aimmo.co.kr".replace(db + ".", "")
         ctx = log_dict["ctx"]
         date = log_dict["t"]["$date"]
         send_user_access(date=date, ctx=ctx, cmd=cmd, client=client, user=user, db=db)
@@ -121,6 +131,7 @@ def check_command(log_dict):
 
 def check_accept_state(log_dict):
     pass
+
 
 def check_authenticated(log_dict):
     date = log_dict["t"]["$date"]
@@ -151,28 +162,36 @@ monitoring_lines = {"Connection accepted": check_accept_state,
                     }
 
 
-def trace_log(thefile):
+def trace_log(log_fd):
+    global retry_this
     global retry_count
-    logging.info(f'start follow - {thefile}')
-    thefile.seek(0, 2)
-    while True:
-        line = thefile.readline()
-        if not line:
-            time.sleep(0.1)
-            try:
-                os.stat(thefile.name)
-            except FileNotFoundError as e:
-                logging.info('trace_log retry_count = {retry_count}')
-                log_monitor(thefile.name)
+    
+    logging.info(f'start follow - {log_fd}')
+    log_fd.seek(0, 2)
+    retry_this = False
+    while is_log_trace:
+        try:
+            os.stat(log_fd.name)
+            line = log_fd.readline()
+            if not line:
+                time.sleep(0.1)
                 continue
-
-                # print(f'\n\n*** lines = {line}')%
-        if line.startswith('{'):
-            log_dict = json.loads(line)
-            if log_dict["msg"] in monitoring_lines.keys():
-                monitoring_lines.get(log_dict["msg"])(log_dict)
-                # print(f'line = {log_dict["t"]["$date"]} {log_dict["msg"]}')
-    logging.info(f'end follow - {thefile}')
+            else:
+                retry_this = False
+                if line.startswith('{'):
+                    log_dict = json.loads(line)
+                    if log_dict["msg"] in monitoring_lines.keys():
+                        monitoring_lines.get(log_dict["msg"])(log_dict)
+        except FileNotFoundError as file_not_found:
+            logging.info('Exception: FileNotFoundError = \n\t\t{file_not_found}')
+            retry_this = True
+            return False
+        except Exception as general_except:
+            logging.info('Exception: FileNotFoundError = \n\t\t{file_not_found}')
+            retry_this = False
+            return False
+    logging.info(f'end follow - {log_fd}')
+    return True
 
 
 def get_arg_logpath():
@@ -182,20 +201,57 @@ def get_arg_logpath():
     return args.filepath
 
 
-def log_monitor(fileName: str):
+def log_monitor(file_name: str):
+    global retry_this
     global retry_count
+    global is_log_trace
     try:
-        with open(mongodb_log_path, "rt") as fd:
+        with open(file_name, "rt") as fd:
             logging.info(f'success to open file {fd}')
-            retry_count = 0
-            trace_log(fd)
+            is_log_trace = True
+            result = trace_log(fd)
             fd.close()
-    except FileNotFoundError as e:
-        logging.error(f'trace_log retry_count = {retry_count}')
-        time.sleep(0.1)
-        if retry_count < 300:
+            return result
+    except FileNotFoundError as file_not_found:
+        logging.info('Exception: FileNotFoundError = \n\t\t{file_not_found}')
+        retry_this = True
+        return False
+    retry_this = False
+    return False
+
+
+def retry_run(log_path):
+    global retry_count
+    while retry_this:
+        log_monitor(file_name=log_path)
+        logging.info(f'retry_run: retry {retry_count}')
+        if retry_count < 600:
             retry_count += 1
-            log_monitor(fileName)
+            time.sleep(1)
+        else:
+            logging.info('retry_run: exit')
+            break
+
+
+def sig_handler(sig_num, frame):
+    global is_log_trace
+    global retry_this
+    global retry_count
+    
+    if sig_num == signal.SIGUSR1:
+        logging.info('sig_handler: reload_log_trace')
+        is_log_trace = False
+        retry_count = 0
+        retry_this = True
+    if sig_num in [signal.SIGKILL, signal.SIGTERM, signal.SIGSEGV, signal.SIGHUP, signal.SIGABRT]:
+        logging.info(f'sig_handler: {sig_num}')
+        sys.exit()
+
+
+def write_pid():
+    with open("log_collector.pid", "wt") as fd:
+        fd.write(f"{os.getpid()}")
+        fd.close()
 
 
 if __name__ == "__main__":
@@ -204,5 +260,17 @@ if __name__ == "__main__":
     except Exception as e:
         mongodb_log_path = get_arg_logpath()
     
+    write_pid()
+    
+    signal.signal(signal.SIGUSR1, sig_handler)
+    
     logging.info(f'log_path = {mongodb_log_path}')
-    log_monitor(mongodb_log_path)
+    retry_run(log_path=mongodb_log_path)
+    
+    s = "abdcd"
+    s.find()
+    s = ["a", "v"]
+    s.index("a")
+    y = 123
+    z = list(str(y))
+    z.reverse()

@@ -6,7 +6,7 @@ def generate_gauge(key: str, label: dict, value: any, registry: CollectorRegistr
         label["instance"] = host_name
     gauge = Gauge(key, key, label.keys(), registry=registry)
     print(f'value = {value}')
-    gauge.labels(*label.values()).set(value=value[''])
+    gauge.labels(*label.values()).set(value=value)
     return gauge
 
 

@@ -1,8 +1,7 @@
 from elasticsearch import Elasticsearch
-from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
 from datetime import datetime, timedelta, timezone
-from config import els_address, slack_channel_name
+from config import els_address
+from service.slack import send_msg
 
 slack_token = ""
 
@@ -29,18 +28,6 @@ esl_query = {
 slack_msg_format = "[\n\tSystem = {system}\n\tLevel = {level}\n\tMsg = {msg}\n\tDate = {date}\n]"
 
 
-def send_msg(system: str, level: str, msg: str):
-    with WebClient(token=slack_token) as client:
-        try:
-            text = slack_msg_format.format(system=system, level=level, msg=msg, date=datetime.now(KST))
-            response = client.chat_postMessage(
-                channel=slack_channel_name,
-                text=text)
-            print(response)
-        except SlackApiError as e:
-            assert e.response["error"]
-
-
 def get_errors(els_uri: str) -> int:
     cnt = 0
     with Elasticsearch(els_uri) as es:
@@ -52,9 +39,8 @@ def get_errors(els_uri: str) -> int:
                 system = log['_source']['host']['hostname']
                 level = log['_source']['log']['level']
                 msg_parts = log['_source']['log']['log'].split(level + "  ")
-                send_msg(system=system,
-                         level=level,
-                         msg=msg_parts[1])
+                slack_msg = slack_msg_format.format(system=system, level=level, msg=msg_parts[1], date=datetime.now(KST))
+                send_msg(slack_msg=slack_msg, slack_token=slack_token)
                 cnt += 1
     return cnt
 

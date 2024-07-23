@@ -50,3 +50,5 @@ switched to db admin
 ```shell
 SLACK_API_TOKEN=abcdefghijklmn python collector_cron.py
 ```
+
+** Slask/ElasticSearch가 운영되고 있는 시스템은 common-bastion의 "04-database-common-els-01"입니다.

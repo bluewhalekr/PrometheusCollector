@@ -1,8 +1,9 @@
 /opt/log_collector/*.log
 {
-    missingok
     daily
-    copytruncate
     rotate 7
+    missingok
+    compress
     notifempty
+    dateext
 }

@@ -6,7 +6,7 @@ view init
 from view.allview import about
 from view.allview import get_mysql
 from view.allview import get_redis
-from view.allview import get_mongodb, view_mongo_is_alive
+from view.allview import get_mongodb, get_mongodb_isalive
 from view.allview import view_docker_ps_cnt
 from view.allview import view_containerd_cnt
 from view.allview import view_docker_ps_abnormal_cnt
@@ -30,4 +30,4 @@ def add_url_rules(app):
     app.add_url_rule('/metric/disk', view_func=view_disk)
     app.add_url_rule('/metric/memory', view_func=view_memory)
     app.add_url_rule('/metric/file_size/<file_name_path>', view_func=view_file_size)
-    app.add_url_rule('/metric/mongodb/is_alive', view_fun=view_mongo_is_alive)
+    app.add_url_rule('/metric/mongodb/is_alive', view_func=get_mongodb_isalive)

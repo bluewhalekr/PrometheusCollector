@@ -110,7 +110,7 @@ def get_mongo_metrics(resource_name, service_name, host_name):
     return metrics
 
 
-def get_mongo_is_live():
+def get_mongo_is_alive():
     from pymongo import MongoClient
     import pymongo
     import socket
@@ -129,5 +129,4 @@ def get_mongo_is_live():
     label = {"instance": host_name, "metric": "is_alive", "resource": resource_name, "service": service_name}
     registry = CollectorRegistry()
     generate_gauge(key=key, label=label, value=is_alive, registry=registry, host_name=host_name)
-    metric = generate_latest(registry=registry)
-    return metric.decode('utf-8'), 200
+    return generate_latest(registry=registry)

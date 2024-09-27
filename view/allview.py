@@ -56,6 +56,12 @@ def get_mongodb():
     return "empty data", 500
 
 
+def get_mongodb_isalive():
+    from service.mongodb import get_mongo_is_alive
+    metric = get_mongo_is_alive()
+    return metric.decode('utf-8'), 200
+
+
 def view_docker_ps_cnt():
     import subprocess
     cmd = "/usr/bin/ps -adef|/usr/bin/grep 'docker run'|/usr/bin/grep -Ewv 'ps|grep'|/usr/bin/wc -l"
@@ -234,8 +240,3 @@ def view_file_size(file_name_path: str):
     
     metric = generate_latest(registry=registry)
     return metric.decode('utf-8'), 200
-
-
-def view_mongo_is_alive():
-    from service.mongodb import get_mongo_is_live
-    return get_mongo_is_live()

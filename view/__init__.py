@@ -1,3 +1,8 @@
+"""
+view init
+"""
+
+
 from view.allview import about
 from view.allview import get_mysql
 from view.allview import get_redis

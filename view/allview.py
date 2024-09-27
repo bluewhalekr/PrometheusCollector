@@ -234,3 +234,8 @@ def view_file_size(file_name_path: str):
     
     metric = generate_latest(registry=registry)
     return metric.decode('utf-8'), 200
+
+
+def view_mongo_is_alive():
+    from service.mongodb import get_mongo_is_live
+    return get_mongo_is_live()

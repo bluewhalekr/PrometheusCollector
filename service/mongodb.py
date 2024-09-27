@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from config import mongodb_uri
 from prometheus_client import Gauge, CollectorRegistry, generate_latest
+from lib.prometheus_metric_util import generate_gauge
 
 
 def get_mongo_metrics(resource_name, service_name, host_name):
@@ -109,8 +110,24 @@ def get_mongo_metrics(resource_name, service_name, host_name):
     return metrics
 
 
-def get_mongostat():
+def get_mongo_is_live():
     from pymongo import MongoClient
-    uri = "mongodb://admin1:bluewhale0321!@dev-db-vm01.koreacentral.cloudapp.azure.com:37027,dev-db-vm02.koreacentral.cloudapp.azure.com:37027"
-    client = MongoClient(uri)
-    client.get_database('admin').command('serverStatus')
+    import pymongo
+    import socket
+
+    client = MongoClient(mongodb_uri, connectTimeoutMS=1000, timeoutMS=1000)
+    is_alive = 1
+    try:
+        client.admin.command('ping')
+    except pymongo.errors.ServerSelectionTimeoutError:
+        print('time outed.')
+        is_alive = 0
+        
+    from config import resource_name, service_name
+    key = "mongodb_is_alive"
+    host_name = socket.gethostname()
+    label = {"instance": host_name, "metric": "is_alive", "resource": resource_name, "service": service_name}
+    registry = CollectorRegistry()
+    generate_gauge(key=key, label=label, value=is_alive, registry=registry, host_name=host_name)
+    metric = generate_latest(registry=registry)
+    return metric.decode('utf-8'), 200

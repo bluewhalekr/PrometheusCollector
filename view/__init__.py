@@ -25,4 +25,4 @@ def add_url_rules(app):
     app.add_url_rule('/metric/disk', view_func=view_disk)
     app.add_url_rule('/metric/memory', view_func=view_memory)
     app.add_url_rule('/metric/file_size/<file_name_path>', view_func=view_file_size)
-    app.add_url_rule('.metric/mongodb/is_alive', view_fun=view_mongo_is_alive)
+    app.add_url_rule('/metric/mongodb/is_alive', view_fun=view_mongo_is_alive)

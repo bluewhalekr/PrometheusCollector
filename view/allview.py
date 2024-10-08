@@ -241,12 +241,10 @@ def view_file_size(file_name_path: str):
     return metric.decode('utf-8'), 200
 
 
-def view_cert_validate_days():
-    from config import cert_file_path
+def get_ssl_valid_days(cert_file_path: str):
     import ssl
     from dateutil.parser import parse
     import datetime
-    
     label = {"instance": "", "metric": "ssl_validate", "resource": resource_name, "service": service_name}
     key = "ssl_validate"
 
@@ -254,17 +252,30 @@ def view_cert_validate_days():
         cert_dict = ssl._ssl._test_decode_cert(cert_file_path)
         cert_after = parse(cert_dict['notAfter'])
         now = datetime.datetime.now()
-        state_code = 200
         leaved = (cert_after.date() - now.date()).days
     except Exception as e:
         print(e)
         leaved = -1
-        state_code = 500
 
     registry = CollectorRegistry()
 
+    filepaths = cert_file_path.split('/')
+    label['dns'] = filepaths[len(filepaths) - 2]
+
     generate_gauge(key=key, label=label, value=leaved, registry=registry, host_name=host_name)
-    
+
     metric = generate_latest(registry=registry)
     
-    return metric.decode('utf-8'), state_code
+    return metric.decode('utf-8')
+
+
+def view_cert_validate_days():
+    from config import cert_file_path as cert_file_paths
+    
+    metrics = []
+    
+    for cert_file_path in cert_file_paths:
+        metric = get_ssl_valid_days(cert_file_path)
+        metrics.append(metric)
+    
+    return "\n".join(metrics), 200

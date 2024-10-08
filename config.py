@@ -16,4 +16,4 @@ slack_channel_name = "alpha-eimmo"
 mysql_host = "172.0.0.1"
 mysql_user = "tester"
 mysql_password = "******"
-cert_file_path = '/etc/ssl/cert.pem'
+cert_file_path = ['/etc/ssl/cert.pem']

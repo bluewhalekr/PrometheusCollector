@@ -6,8 +6,8 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/opt/collector/
-Environment=PATH=/opt/collector/venv/bin:$PATH
-Environment=PYTHONPATH=/opt/collector/venv/lib/python3.8/site-packages:/opt/collector:$PYTHONPATH
+Environment=PATH=/opt/collector/venv/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+Environment=PYTHONPATH=/opt/collector/venv/lib/python3.8/site-packages:/opt/collector:/opt/collector
 ExecStart=/opt/collector/venv/bin/python /opt/collector/collector.py
 Restart=on-failure
 RestartSec=20s

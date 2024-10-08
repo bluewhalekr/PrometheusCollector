@@ -241,7 +241,7 @@ def view_file_size(file_name_path: str):
     return metric.decode('utf-8'), 200
 
 
-def view_cert():
+def view_cert_validate_days():
     from config import cert_file_path
     import ssl
     from dateutil.parser import parse
@@ -255,7 +255,7 @@ def view_cert():
         cert_after = parse(cert_dict['notAfter'])
         now = datetime.datetime.now()
         state_code = 200
-        leaved = (cert_after - now).days
+        leaved = (cert_after.date() - now.date()).days
     except Exception as e:
         print(e)
         leaved = -1

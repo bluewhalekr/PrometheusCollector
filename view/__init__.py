@@ -13,6 +13,7 @@ from view.allview import view_docker_ps_abnormal_cnt
 from view.allview import view_process_cnt
 from view.allview import view_fd, view_fd_default
 from view.allview import view_cpu, view_disk, view_memory, view_file_size
+from view.allview import view_cert_validate_days
 
 
 def add_url_rules(app):
@@ -31,3 +32,4 @@ def add_url_rules(app):
     app.add_url_rule('/metric/memory', view_func=view_memory)
     app.add_url_rule('/metric/file_size/<file_name_path>', view_func=view_file_size)
     app.add_url_rule('/metric/mongodb/is_alive', view_func=get_mongodb_isalive)
+    app.add_url_rule('/metric/ssl/validate/days', view_func=view_cert_validate_days)

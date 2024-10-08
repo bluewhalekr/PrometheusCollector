@@ -16,7 +16,6 @@ def about():
 
 def get_mysql(db_name: str, table_name: str):
     from service.mysql import get_information_schema
-    
     metrics = get_information_schema(rg_name=resource_name,
                                      host=mysql_host,
                                      user=mysql_user,
@@ -240,3 +239,32 @@ def view_file_size(file_name_path: str):
     
     metric = generate_latest(registry=registry)
     return metric.decode('utf-8'), 200
+
+
+def view_cert():
+    from config import cert_file_path
+    import ssl
+    from dateutil.parser import parse
+    import datetime
+    
+    label = {"instance": "", "metric": "ssl_validate", "resource": resource_name, "service": service_name}
+    key = "ssl_validate"
+
+    try:
+        cert_dict = ssl._ssl._test_decode_cert(cert_file_path)
+        cert_after = parse(cert_dict['notAfter'])
+        now = datetime.datetime.now()
+        state_code = 200
+        leaved = (cert_after - now).days
+    except Exception as e:
+        print(e)
+        leaved = -1
+        state_code = 500
+
+    registry = CollectorRegistry()
+
+    generate_gauge(key=key, label=label, value=leaved, registry=registry, host_name=host_name)
+    
+    metric = generate_latest(registry=registry)
+    
+    return metric.decode('utf-8'), state_code

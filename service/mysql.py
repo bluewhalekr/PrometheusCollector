@@ -1,19 +1,26 @@
+"""wrapper code for mysql information schema"""
 import pymysql
 from prometheus_client import CollectorRegistry, Gauge, generate_latest
-
 from lib.util import text_to_num
 
 
-def get_information_schema(rg_name: str, host: str, user: str, password: str, table_name: str, db: str) -> []:
+def get_information_schema(rg_name: str,
+                           host: str,
+                           user: str,
+                           password: str,
+                           table_name: str,
+                           db: str) -> []:
+    """collect metric from mysql information schema"""
     metrics = []
     results = []
-    
-    sql = f'select * from information_schema.tables where table_name="{table_name}" and table_schema="{db}"'
-    
-    con = pymysql.connect(host = host, user=user, password=password, db=db)
+    sql = f'select * from information_schema.tables ' + \
+          f'where table_name="{table_name}" and table_schema="{db}"'
+    con = pymysql.connect(host=host,
+                          user=user,
+                          password=password,
+                          db=db)
     cursor = con.cursor()
     cursor.execute(sql)
-
     for cur in cursor:
         result = {"version": cur[5],
                   "table_rows": cur[7],
@@ -24,11 +31,14 @@ def get_information_schema(rg_name: str, host: str, user: str, password: str, ta
                   "data_free": cur[12],
                   "auto_increment": cur[13]}
         results.append(result)
-
     for result in results:
         for key in result.keys():
             registry = CollectorRegistry()
-            label = {"resource": rg_name, "db_addr": host, "db_name": db, "table_name": table_name, "metric": key}
+            label = {"resource": rg_name,
+                     "db_addr": host,
+                     "db_name": db,
+                     "table_name": table_name,
+                     "metric": key}
             gauge = Gauge(key, key, label.keys(), registry=registry)
             metric_num = result[key]
             if type(metric_num) == str:
@@ -39,5 +49,4 @@ def get_information_schema(rg_name: str, host: str, user: str, password: str, ta
             metrics.append(metric.decode('utf-8'))
     cursor.close()
     con.close()
-            
     return metrics

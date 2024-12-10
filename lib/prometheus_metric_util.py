@@ -1,7 +1,13 @@
+"""wrapper code for prometheus metric library"""
 from prometheus_client import CollectorRegistry, Gauge
 
 
-def generate_gauge(key: str, label: dict, value: any, registry: CollectorRegistry, host_name: str = "localhost") -> Gauge:
+def generate_gauge(key: str,
+                   label: dict,
+                   value: any,
+                   registry: CollectorRegistry,
+                   host_name: str = "localhost") -> Gauge:
+    """generate gauge"""
     if "instance" in label:
         label["instance"] = host_name
     gauge = Gauge(key, key, label.keys(), registry=registry)
@@ -11,8 +17,12 @@ def generate_gauge(key: str, label: dict, value: any, registry: CollectorRegistr
 
 
 def generate_registry(datas, keys, host_name) -> CollectorRegistry:
+    """generate registry"""
     registry = CollectorRegistry()
-    
     for key in keys.keys():
-        generate_gauge(key=key, label=keys[key], value=datas[key], registry=registry, host_name=host_name)
+        generate_gauge(key=key,
+                       label=keys[key],
+                       value=datas[key],
+                       registry=registry,
+                       host_name=host_name)
     return registry

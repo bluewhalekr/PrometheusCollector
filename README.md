@@ -47,6 +47,8 @@ switched to db admin
 ```
 
 ## How to run Cron Daemon
+cron 데몬은 별도로 실행해 주어야 합니다.
+
 ```shell
 SLACK_API_TOKEN=abcdefghijklmn python collector_cron.py
 ```

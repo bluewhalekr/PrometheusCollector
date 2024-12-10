@@ -1,3 +1,4 @@
+"""python main code"""
 from flask import Flask
 import daemon
 import argparse
@@ -22,19 +23,14 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--redis_cron', type=int, default=0,
                         help='An integer which means to use cron daemon. Default values is 0.')
     args = parser.parse_args()
-    
     if args.redis_cron == 1:
-        from service.redis import init_redis_cron_lock
-        
-        init_redis_cron_lock()
-    
+        from service.redis import init_shm_lock
+        init_shm_lock()
     if args.daemon == 1:
         with daemon.DaemonContext():
             main()
     else:
         main()
-    
     if args.redis_cron == 1:
-        from service.redis import fint_redis_cron_lock
-        
-        fint_redis_cron_lock()
+        from service.redis import fint_shm_lock
+        fint_shm_lock()

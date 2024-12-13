@@ -31,8 +31,8 @@ def get_mongo_metrics(resource_name, service_name, host_name):
             {"instance": "", "metric": "available", "resource": resource_name, "service": service_name}, connection_st['available']],
         "mongodb_connections_totalCreated": [
             {"instance": "", "metric": "totalCreated", "resource": resource_name, "service": service_name}, connection_st['totalCreated']],
-        "mongodb_connections_rejected": [
-            {"instance": "", "metric": "rejected", "resource": resource_name, "service": service_name}, connection_st['rejected']],
+        # "mongodb_connections_rejected": [
+        #     {"instance": "", "metric": "rejected", "resource": resource_name, "service": service_name}, connection_st['rejected']],
         "mongodb_connections_active": [
             {"instance": "", "metric": "active", "resource": resource_name, "service": service_name}, connection_st['active']],
         "mongodb_connections_threaded": [
@@ -82,8 +82,8 @@ def get_mongo_metrics(resource_name, service_name, host_name):
         "mongodb_extra_info_involuntary_context_switches": [
             {"instance": "", "metric": "involuntary_context_switches", "resource": resource_name, "service": service_name},
             extra_info_st['involuntary_context_switches']],
-        "mongodb_extra_info_threads":
-            [{"instance": "", "metric": "threads", "resource": resource_name, "service": service_name}, extra_info_st['threads']],
+        #"mongodb_extra_info_threads":
+        #    [{"instance": "", "metric": "threads", "resource": resource_name, "service": service_name}, extra_info_st['threads']],
         "mongodb_oplatencies_reads_latency":
             [{"instance": "", "metric": "reads_latency", "resource": resource_name, "service": service_name}, oplatencies_st['reads']['latency']],
         "mongodb_oplatencies_reads_ops":

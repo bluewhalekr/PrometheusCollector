@@ -11,7 +11,7 @@ decimal_degree = {
 
 
 def text_to_num(text):
-    if len(text) == 0 or text == " ":
+    if len(text) == 0 or text == " " or text.isdigit() == False:
         return 0
     elif text[-1] == "B":
         return int(text[:-1])

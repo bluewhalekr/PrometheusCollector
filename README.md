@@ -54,3 +54,5 @@ SLACK_API_TOKEN=abcdefghijklmn python collector_cron.py
 ```
 
 ** Slask/ElasticSearch가 운영되고 있는 시스템은 common-bastion의 "04-database-common-els-01"입니다.
+
+** devdb-node3의 경우에는 redis 매트릭을 수집하기 위해서 크론을 사용하고 있습니다. cron 데몬을 구동하고 프로그램의 파라미터에 "--redis_cron=1"을 추가하여 주십시요.

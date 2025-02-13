@@ -41,8 +41,7 @@ redis_metric_keys = ["io_threads_active", "connected_clients",
                      "total_writes_processed", "reply_buffer_shrinks",
                      "role", "repl_backlog_size",
                      "used_cpu_sys", "used_cpu_user",
-                     "used_cpu_sys_children", "used_cpu_user_children",
-                     "redis_used_cpu_sys_children"]
+                     "used_cpu_sys_children", "used_cpu_user_children"]
 
 
 def get_dict():
@@ -84,9 +83,11 @@ def get_redis_metric(resource_name: str, host_name: str) -> list:
             metric_num = key_vals[metric_key][1]
             gauge = Gauge(metric_key, metric_key, label.keys(), registry=registry)
             label_values = label.values()
-            if type(metric_num) == str:
-                metric_num = text_to_num(metric_num)
-            gauge.labels(*label_values).set(metric_num)
+            if metric_num is not None and type(metric_num) == str and metric_num.isdigit():
+                metric_real_num = text_to_num(metric_num)
+            else:
+                metric_real_num = 0.0
+            gauge.labels(*label_values).set(metric_real_num)
             metric = generate_latest(registry=registry)
             metrics.append(metric.decode('utf-8'))
     return metrics

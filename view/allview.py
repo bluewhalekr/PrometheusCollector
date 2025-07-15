@@ -69,6 +69,12 @@ def get_mongodb_isalive():
     return metric.decode('utf-8'), 200
 
 
+def view_os_version():
+    from service.os_util import get_os_version
+    metric = get_os_version()
+    return metric.decode('utf-8'), 200
+
+
 def view_docker_ps_cnt():
     """docker ps cnt view"""
     import subprocess

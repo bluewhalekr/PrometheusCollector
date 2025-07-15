@@ -1,8 +1,6 @@
 """
 view init
 """
-
-
 from view.allview import about
 from view.allview import get_mysql
 from view.allview import get_redis
@@ -14,9 +12,11 @@ from view.allview import view_process_cnt
 from view.allview import view_fd, view_fd_default
 from view.allview import view_cpu, view_disk, view_memory, view_file_size
 from view.allview import view_cert_validate_days
+from view.allview import view_os_version
 
 
 def add_url_rules(app):
+    """ add_url_rules """
     app.add_url_rule('/about', view_func=about)
     app.add_url_rule('/metric/mysql/<db_name>/<table_name>', view_func=get_mysql)
     app.add_url_rule('/metric/redis', view_func=get_redis)
@@ -29,6 +29,7 @@ def add_url_rules(app):
     app.add_url_rule('/metric/fd', view_func=view_fd_default)
     app.add_url_rule('/metric/cpu', view_func=view_cpu)
     app.add_url_rule('/metric/disk', view_func=view_disk)
+    app.add_url_rule('/metric/os/version', view_func=view_os_version)
     app.add_url_rule('/metric/memory', view_func=view_memory)
     app.add_url_rule('/metric/file_size/<file_name_path>', view_func=view_file_size)
     app.add_url_rule('/metric/mongodb/is_alive', view_func=get_mongodb_isalive)

@@ -12,8 +12,13 @@ twenty_seconds_task = "els_alarm"
 redis_hosts = [":tester:localhost:6379:test-redis",]
 redis_use_ssl = False
 els_address = "http://localhost:9200"
+els_index_prefix="backend-api-"
 slack_channel_name = "alpha-eimmo"
 mysql_host = "172.0.0.1"
 mysql_user = "tester"
 mysql_password = "******"
 cert_file_path = ['/etc/ssl/cert.pem']
+rabbitmq_info = {"addr": "localhost:15672",
+                 "user": "monitor",
+                 "passwd": "monitor"
+                 }

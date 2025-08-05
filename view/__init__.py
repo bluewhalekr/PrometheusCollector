@@ -13,6 +13,8 @@ from view.allview import view_fd, view_fd_default
 from view.allview import view_cpu, view_disk, view_memory, view_file_size
 from view.allview import view_cert_validate_days
 from view.allview import view_os_version
+from view.allview import view_es_yesterday_index_length, view_es_current_index_length
+from view.allview import view_rabbitmq_queue_item_cnt, view_rabbitmq_queue_item_cnt_root
 
 
 def add_url_rules(app):
@@ -34,3 +36,7 @@ def add_url_rules(app):
     app.add_url_rule('/metric/file_size/<file_name_path>', view_func=view_file_size)
     app.add_url_rule('/metric/mongodb/is_alive', view_func=get_mongodb_isalive)
     app.add_url_rule('/metric/ssl/validate/days', view_func=view_cert_validate_days)
+    app.add_url_rule('/metric/es/idx_size/yesterday/<name>/<is_stream_idx>', view_func=view_es_yesterday_index_length)
+    app.add_url_rule('/metric/es/idx_size/current/<name>/<is_stream_idx>', view_func=view_es_current_index_length)
+    app.add_url_rule('/metric/rabbitmq/queue_item_cnt/<queue_name>/<vhost_name>', view_func=view_rabbitmq_queue_item_cnt)
+    app.add_url_rule('/metric/rabbitmq/queue_item_cnt/<queue_name>', view_func=view_rabbitmq_queue_item_cnt_root)

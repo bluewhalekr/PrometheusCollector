@@ -20,4 +20,5 @@ slack_sdk
 pymysql
 requests
 python-dateutil
-#elsaticsearch
+elasticsearch==8
+pyrabbit2

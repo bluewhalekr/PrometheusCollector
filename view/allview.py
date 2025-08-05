@@ -69,7 +69,39 @@ def get_mongodb_isalive():
     return metric.decode('utf-8'), 200
 
 
+def view_rabbitmq_queue_item_cnt(queue_name="", vhost_name="/"):
+    """ view_rabbitmq_queue_item_cnt """
+    from service.rabbitmqcl import get_rabbitmq_queue_item_cnt
+    return get_rabbitmq_queue_item_cnt(queue_name=queue_name, vhost_name=vhost_name)
+
+
+def view_rabbitmq_queue_item_cnt_root(queue_name=""):
+    """ view_rabbitmq_queue_item_cnt_root """
+    from service.rabbitmqcl import get_rabbitmq_queue_item_cnt
+    return get_rabbitmq_queue_item_cnt(queue_name=queue_name, vhost_name='/')
+
+
+def view_es_yesterday_index_length(name="", is_stream_idx="1"):
+    """ view_es_yesterday_index_length """
+    from service.es import view_es_index_length
+    return view_es_index_length(name=name, is_stream_idx=is_stream_idx, is_yesterday=True)
+
+
+def view_es_current_index_length(name="", is_stream_idx="1"):
+    """ view_es_current_index_length """
+    from service.es import view_es_index_length
+    return view_es_index_length(name=name, is_stream_idx=is_stream_idx, is_yesterday=False)
+
+
+def view_es_index_length(name, is_stream_idx=1):
+    """ view_es_index_length """
+    from service.es import get_index_size_matrix
+    metric = get_index_size_matrix(index_name=name, is_stream_idx=True if is_stream_idx else False)
+    return metric.decode('utf-8'), 200
+
+
 def view_os_version():
+    """ view_os_version """
     from service.os_util import get_os_version
     metric = get_os_version()
     return metric.decode('utf-8'), 200
